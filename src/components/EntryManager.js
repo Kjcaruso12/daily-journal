@@ -21,8 +21,8 @@ export const addEntry = Entry => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(Entry)
-  }).then(getEntries);
-};
+  }).then(getEntries)
+}
 
 export const deleteEntry = entryId => {
   return fetch(`http://localhost:8088/entries/${entryId}`, {

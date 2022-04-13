@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Entry } from "./Entry";
 import { searchEntries } from "./EntryManager";
+import { getEntryTags, getTags } from "./tag/TagManager";
 
-export const EntryList = ({ moods, entries, onEditButtonClick, onDeleteButtonClick }) => {
+export const EntryList = ({ moods, entries, tags, entryTags, onEditButtonClick, onDeleteButtonClick }) => {
 
   const [filteredEntries, setEntries] = useState([]);
   const [searchedTerm, setTerm] = useState("");
   const [moodSelected, setMoodSelected] = useState("");
+  // const [entryTags, setEntryTags] = useState([]);
+  // const [tags, setTags] = useState(eTags)
 
   useEffect(() => {
     if (searchedTerm !== "") {
@@ -16,11 +19,20 @@ export const EntryList = ({ moods, entries, onEditButtonClick, onDeleteButtonCli
     }
   }, [searchedTerm, entries])
 
-
   const filterAllEntries = (moodId) => {
     const filteredEntriesByMood = entries.filter(entry => entry.moodId === parseInt(moodId))
     setEntries(filteredEntriesByMood)
     setMoodSelected(parseInt(moodId))
+  }
+
+  const filterTags = (entryId) => {
+    const tagArray = []
+    const filteredByEntry = entryTags.filter(entry => entry.entry_id === entryId)
+    filteredByEntry.map(entry => {
+      const foundTag = tags?.find(tag => tag.id === entry.tag_id)
+      tagArray.push(foundTag)
+    })
+    return tagArray
   }
 
 
@@ -33,8 +45,9 @@ export const EntryList = ({ moods, entries, onEditButtonClick, onDeleteButtonCli
           setMoodSelected("")
         }}>All</a>
         {
-          moods.map(mood => {
+          moods.map((mood, index) => {
             return <a
+              key={index}
               onClick={() => filterAllEntries(mood.id)}
               className={moodSelected === mood.id ? "is-active" : ""}
             >{mood.label}</a>
@@ -59,11 +72,11 @@ export const EntryList = ({ moods, entries, onEditButtonClick, onDeleteButtonCli
             .filter(happyEntries => happyEntries.mood.label === "Happy")
         */}
       {filteredEntries.map(entry => {
-        return <div className="panel-block">
+        return <div key={entry.id} className="panel-block">
           <Entry
-            key={entry.id}
             entry={entry}
             mood={moods.find(m => m.id === entry.moodId)}
+            tags={filterTags(entry.id)}
             onEditButtonClick={onEditButtonClick}
             onDeleteButtonClick={onDeleteButtonClick}
           />

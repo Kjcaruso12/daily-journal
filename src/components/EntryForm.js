@@ -1,18 +1,48 @@
 import React, { useState, useEffect } from "react"
 
-export const EntryForm = ({ entry, moods, onFormSubmit }) => {
+export const EntryForm = ({ entry, moods, tags, onFormSubmit }) => {
     const [editMode, setEditMode] = useState(false)
     const [updatedEntry, setUpdatedEntry] = useState(entry)
+    const [checkedTags, setCheckedTags] = useState([])
+    const [checkedState, setCheckedState] = useState(
+        new Array(tags?.length).fill(false)
+    );
+    // const tagArray = []
 
-    useEffect(() => {
-        setUpdatedEntry(entry)
-        if ('id' in entry) {
-            setEditMode(true)
-        }
-        else {
-            setEditMode(false)
-        }
-    }, [entry])
+
+    useEffect(
+        () => {
+            setUpdatedEntry(entry)
+            if ('id' in entry) {
+                setEditMode(true)
+            }
+            else {
+                setEditMode(false)
+            }
+        }, [entry])
+
+    useEffect(
+        () => {
+            setCheckedState(new Array(tags?.length).fill(false))
+        }, [tags])
+
+    const onAddTag = (value) => {
+        const list = checkedTags.concat(parseInt(value))
+        setCheckedTags(list)
+    }
+
+    const handleOnChange = (position) => {
+        const updatedCheckedState = checkedState?.map((item, index) =>
+            index === position ? !item : item
+        )
+        updatedCheckedState?.map((state, index) => {
+            if (state === true & index === position) {
+                const newIndex = index + 1
+                onAddTag(newIndex)
+            }
+        })
+        setCheckedState(updatedCheckedState)
+    }
 
     const handleControlledInputChange = (event) => {
         /*
@@ -24,14 +54,14 @@ export const EntryForm = ({ entry, moods, onFormSubmit }) => {
         setUpdatedEntry(newEntry)
     }
 
-
-
     const constructNewEntry = () => {
         const copyEntry = { ...updatedEntry }
         copyEntry.moodId = parseInt(copyEntry.moodId)
         if (!copyEntry.date) {
             copyEntry.date = Date(Date.now()).toLocaleString('en-us').split('GMT')[0]
         }
+        copyEntry.tags = checkedTags
+
         onFormSubmit(copyEntry)
     }
 
@@ -55,12 +85,35 @@ export const EntryForm = ({ entry, moods, onFormSubmit }) => {
                         <label htmlFor="entry" className="label">Entry: </label>
                         <div className="control">
                             <textarea
-                                class="textarea"
+                                className="textarea"
                                 name="entry"
                                 value={updatedEntry.entry}
                                 onChange={handleControlledInputChange}
                             ></textarea>
                         </div>
+                    </div>
+                    <div className="field">
+                        <label htmlFor="tags" className="label">Tags: </label>
+                        <ul className="tagBoxes">
+                            {
+                                tags?.map((tag, index) => {
+                                    return <li className="tagCheck" key={index}>
+                                        <label htmlFor={tag.subject} className="tag_label">{tag.subject} </label>
+                                        <div className="control">
+                                            <input
+                                                type="checkbox"
+                                                name={tag.subject}
+                                                id={`custom-checkbox-${index}`}
+                                                value={tag.id}
+                                                className={tag.subject}
+                                                checked={checkedState[index]}
+                                                onChange={() => handleOnChange(index)}
+                                            ></input>
+                                        </div>
+                                    </li>
+                                })
+                            }
+                        </ul>
                     </div>
                     <div className="field">
                         <label htmlFor="moodId" className="label">Mood: </label>
